@@ -23,7 +23,7 @@ interface StatusTransition {
 export class OrderDetailPage implements OnInit, OnDestroy {
   order: Order | null = null;
   loading = true;
-  private orderId!: string;
+  private orderId!: number;
   private sub = new Subscription();
   drivers: any[] = [];
 
@@ -43,14 +43,21 @@ export class OrderDetailPage implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.orderId = this.route.snapshot.paramMap.get('id')!;
+    const idParam = this.route.snapshot.paramMap.get('id');
+    this.orderId = idParam ? Number(idParam) : NaN;
+    if (Number.isNaN(this.orderId)) {
+      this.router.navigate(['/orders']);
+      return;
+    }
     this.loadOrder();
     this.socket.joinOrderRoom(this.orderId);
     this.listenToSocket();
   }
 
   ngOnDestroy(): void {
-    this.socket.leaveOrderRoom(this.orderId);
+    if (Number.isFinite(this.orderId)) {
+      this.socket.leaveOrderRoom(this.orderId);
+    }
     this.sub.unsubscribe();
   }
 
@@ -160,10 +167,10 @@ export class OrderDetailPage implements OnInit, OnDestroy {
     });
   }
 
-  private doTransition(targetStatus: OrderStatus, driverId?: string): void {
+  private doTransition(targetStatus: OrderStatus, driverId?: number): void {
     if (!this.order) return;
-    const payload: any = { status: targetStatus };
-    if (driverId) payload.driverId = driverId;
+    const payload: { targetStatus: OrderStatus; driverId?: number } = { targetStatus };
+    if (driverId != null) payload.driverId = driverId;
 
     this.ordersService.transition(this.order.id, payload).subscribe({
       next: (updated) => {
@@ -214,9 +221,10 @@ export class OrderDetailPage implements OnInit, OnDestroy {
     return '—';
   }
 
-  itemTotal(item: any): string {
-    const total = (item.quantite || 0) * (item.prixUnitaire || 0);
-    return total.toLocaleString('fr-MA', { style: 'currency', currency: 'MAD' });
+  itemTotal(item: { quantiteCommandee: string; prixUnitaire: string }): string {
+    const q = parseFloat(item.quantiteCommandee) || 0;
+    const p = parseFloat(item.prixUnitaire) || 0;
+    return (q * p).toLocaleString('fr-MA', { style: 'currency', currency: 'MAD' });
   }
 
   statusTimelineItems() {

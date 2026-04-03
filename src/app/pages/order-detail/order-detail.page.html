@@ -132,7 +132,7 @@
           <div class="item-info">
             <div class="item-name">{{ item.produit?.nom || 'Produit' }}</div>
             <div class="item-meta">
-              <ion-text color="medium"><small>{{ item.quantite }} × {{ item.prixUnitaire | number:'1.2-2' }} MAD</small></ion-text>
+              <ion-text color="medium"><small>{{ item.quantiteCommandee }} × {{ item.prixUnitaire | number:'1.2-2' }} MAD</small></ion-text>
             </div>
           </div>
           <div class="item-total">
@@ -157,19 +157,19 @@
       </ion-card-header>
       <ion-card-content>
         <div class="log-item" *ngFor="let log of order.statusLogs">
-          <ion-badge [color]="getStatusColor(log.newStatus)" class="log-badge">
-            {{ getStatusLabel(log.newStatus) }}
+          <ion-badge [color]="getStatusColor(log.toStatus)" class="log-badge">
+            {{ getStatusLabel(log.toStatus) }}
           </ion-badge>
           <div class="log-meta">
             <ion-text color="medium">
-              <small>{{ log.changedAt | date:'dd/MM/yy HH:mm' }}</small>
+              <small>{{ log.createdAt | date:'dd/MM/yy HH:mm' }}</small>
             </ion-text>
-            <ion-text color="medium" *ngIf="log.changedBy">
-              <small> — {{ log.changedBy.firstName }} {{ log.changedBy.lastName }}</small>
+            <ion-text color="medium" *ngIf="log.triggeredByRole">
+              <small> — {{ log.triggeredByRole }}</small>
             </ion-text>
           </div>
-          <div *ngIf="log.reason" class="log-reason">
-            <ion-text color="medium"><small><em>{{ log.reason }}</em></small></ion-text>
+          <div *ngIf="log.notes" class="log-reason">
+            <ion-text color="medium"><small><em>{{ log.notes }}</em></small></ion-text>
           </div>
         </div>
       </ion-card-content>

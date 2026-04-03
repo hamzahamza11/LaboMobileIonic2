@@ -103,7 +103,7 @@
         <!-- Chef -->
         <div class="info-row">
           <ion-icon name="person-outline" color="medium"></ion-icon>
-          <ion-text>{{ order.chef?.firstName }} {{ order.chef?.lastName }}</ion-text>
+          <ion-text>{{ order.chef.firstName }} {{ order.chef.lastName }}</ion-text>
         </div>
 
         <!-- Driver (if assigned) -->
@@ -116,7 +116,7 @@
         <div class="card-footer">
           <div class="items-count">
             <ion-icon name="list-outline" color="medium"></ion-icon>
-            <ion-text color="medium"><small>{{ order.items?.length || 0 }} article{{ (order.items?.length || 0) > 1 ? 's' : '' }}</small></ion-text>
+            <ion-text color="medium"><small>{{ order.items.length }} article{{ order.items.length > 1 ? 's' : '' }}</small></ion-text>
           </div>
           <div class="order-total">
             <ion-text color="dark"><strong>{{ orderTotal(order) }}</strong></ion-text>

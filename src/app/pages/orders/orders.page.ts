@@ -90,6 +90,14 @@ export class OrdersPage implements OnInit, OnDestroy {
     this.router.navigate(['/orders', order.id]);
   }
 
+  trackById(_index: number, order: Order): number {
+    return order.id;
+  }
+
+  async onLogout(): Promise<void> {
+    await this.auth.logout();
+  }
+
   async confirmCancel(order: Order): Promise<void> {
     const a = await this.alert.create({
       header: 'Annuler la commande',
