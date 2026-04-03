@@ -1,0 +1,147 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>
+      <ion-icon name="cube-outline" style="margin-right:6px;vertical-align:middle"></ion-icon>
+      Commandes
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/orders/create">
+        <ion-icon slot="icon-only" name="add-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="onLogout()">
+        <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <!-- Search Bar -->
+  <ion-toolbar>
+    <ion-searchbar
+      [(ngModel)]="searchText"
+      (ionInput)="applySearch()"
+      placeholder="Rechercher une commande..."
+      debounce="300"
+      animated>
+    </ion-searchbar>
+  </ion-toolbar>
+
+  <!-- Status Filter Chips -->
+  <ion-toolbar>
+    <div class="status-chips">
+      <ion-chip
+        *ngFor="let s of filterStatuses"
+        [color]="selectedStatus === s ? (s === 'ALL' ? 'primary' : getStatusColor(s)) : 'medium'"
+        [outline]="selectedStatus !== s"
+        (click)="onStatusFilter(s)"
+        class="filter-chip">
+        <ion-label>{{ s === 'ALL' ? 'Tout' : getStatusLabel(s) }}</ion-label>
+      </ion-chip>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <!-- Refresher -->
+  <ion-refresher slot="fixed" (ionRefresh)="loadOrders($event)">
+    <ion-refresher-content pullingIcon="chevron-down-circle-outline" refreshingSpinner="crescent"></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Loading Skeleton -->
+  <ng-container *ngIf="loading">
+    <ion-card *ngFor="let i of [1,2,3,4,5]" class="order-card skeleton-card">
+      <ion-card-content>
+        <ion-skeleton-text animated style="width:60%; height:18px; border-radius:6px; margin-bottom:10px"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width:40%; height:14px; border-radius:6px; margin-bottom:8px"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width:80%; height:14px; border-radius:6px"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && filteredOrders.length === 0">
+    <ion-icon name="cube-outline"></ion-icon>
+    <h3>Aucune commande</h3>
+    <p>{{ selectedStatus !== 'ALL' ? 'Aucune commande avec ce statut' : 'Créez votre première commande' }}</p>
+    <ion-button fill="outline" routerLink="/orders/create">
+      <ion-icon slot="start" name="add-outline"></ion-icon>
+      Nouvelle commande
+    </ion-button>
+  </div>
+
+  <!-- Orders List -->
+  <ng-container *ngIf="!loading && filteredOrders.length > 0">
+    <div class="orders-count">
+      <ion-text color="medium">
+        <small>{{ filteredOrders.length }} commande{{ filteredOrders.length > 1 ? 's' : '' }}</small>
+      </ion-text>
+    </div>
+
+    <ion-card
+      *ngFor="let order of filteredOrders; trackBy: trackById"
+      class="order-card"
+      (click)="openOrder(order)"
+      button>
+
+      <ion-card-content>
+        <!-- Header Row -->
+        <div class="card-header">
+          <div class="order-code">
+            <ion-text color="primary"><strong>{{ order.code }}</strong></ion-text>
+          </div>
+          <ion-badge [color]="getStatusColor(order.status)" class="status-badge">
+            {{ getStatusLabel(order.status) }}
+          </ion-badge>
+        </div>
+
+        <!-- PDV -->
+        <div class="info-row" *ngIf="order.pdv">
+          <ion-icon name="storefront-outline" color="medium"></ion-icon>
+          <ion-text>{{ order.pdv.nom }}</ion-text>
+        </div>
+
+        <!-- Chef -->
+        <div class="info-row">
+          <ion-icon name="person-outline" color="medium"></ion-icon>
+          <ion-text>{{ order.chef?.firstName }} {{ order.chef?.lastName }}</ion-text>
+        </div>
+
+        <!-- Driver (if assigned) -->
+        <div class="info-row" *ngIf="order.driver">
+          <ion-icon name="car-outline" color="tertiary"></ion-icon>
+          <ion-text color="tertiary">{{ order.driver.firstName }} {{ order.driver.lastName }}</ion-text>
+        </div>
+
+        <!-- Footer Row -->
+        <div class="card-footer">
+          <div class="items-count">
+            <ion-icon name="list-outline" color="medium"></ion-icon>
+            <ion-text color="medium"><small>{{ order.items?.length || 0 }} article{{ (order.items?.length || 0) > 1 ? 's' : '' }}</small></ion-text>
+          </div>
+          <div class="order-total">
+            <ion-text color="dark"><strong>{{ orderTotal(order) }}</strong></ion-text>
+          </div>
+          <div class="order-date">
+            <ion-text color="medium"><small>{{ order.createdAt | date:'dd/MM/yy' }}</small></ion-text>
+          </div>
+        </div>
+
+        <!-- Cancel Action (only for cancellable statuses by managers) -->
+        <div class="card-actions" *ngIf="auth.isManagerOrAdmin() && order.status !== 'COMPLETED' && order.status !== 'CANCELLED'" (click)="$event.stopPropagation()">
+          <ion-button fill="clear" color="danger" size="small" (click)="confirmCancel(order)">
+            <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+            Annuler
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <!-- FAB Create -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button color="primary" routerLink="/orders/create">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>

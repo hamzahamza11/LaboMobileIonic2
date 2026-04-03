@@ -1,0 +1,140 @@
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  gap: 12px;
+}
+
+ion-card.form-card {
+  margin: 12px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+
+  ion-icon { font-size: 18px; }
+}
+
+.items-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.item-form-group {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ion-color-light);
+
+  &:last-child { border-bottom: none; }
+}
+
+.item-number {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.field-group {
+  margin-bottom: 12px;
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ion-color-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.custom-select {
+  --background: var(--ion-color-light);
+  --border-radius: 10px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  transition: border-color 0.2s;
+
+  &.select-error { border-color: var(--ion-color-danger); }
+}
+
+.custom-input {
+  --background: var(--ion-color-light);
+  --border-radius: 10px;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --padding-top: 12px;
+  --padding-bottom: 12px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  transition: border-color 0.2s;
+
+  &.input-error { border-color: var(--ion-color-danger); }
+}
+
+.custom-textarea {
+  --background: var(--ion-color-light);
+  --border-radius: 10px;
+  --padding-start: 12px;
+  --padding-top: 12px;
+  border-radius: 10px;
+}
+
+.error-msg {
+  color: var(--ion-color-danger);
+  font-size: 12px;
+  margin-top: 4px;
+  padding-left: 4px;
+}
+
+.two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.line-total {
+  text-align: right;
+  margin-top: -4px;
+}
+
+.grand-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 2px solid var(--ion-color-primary);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.submit-section {
+  padding: 8px 16px;
+}
+
+.submit-btn {
+  --border-radius: 12px;
+  height: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.cancel-btn {
+  --border-radius: 12px;
+  height: 44px;
+}

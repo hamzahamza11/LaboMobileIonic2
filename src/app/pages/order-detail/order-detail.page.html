@@ -1,0 +1,202 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/orders"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ order?.code || 'Commande' }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="loadOrder()">
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <!-- Loading Skeleton -->
+  <ng-container *ngIf="loading">
+    <ion-card>
+      <ion-card-content>
+        <ion-skeleton-text animated style="width:50%; height:20px; border-radius:6px; margin-bottom:12px"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width:80%; height:14px; border-radius:6px; margin-bottom:8px"></ion-skeleton-text>
+        <ion-skeleton-text animated style="width:60%; height:14px; border-radius:6px"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <ng-container *ngIf="!loading && order">
+
+    <!-- Status Header Card -->
+    <ion-card class="status-card">
+      <ion-card-content>
+        <div class="status-header">
+          <div>
+            <h2 class="order-code-title">{{ order.code }}</h2>
+            <ion-text color="medium"><small>{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</small></ion-text>
+          </div>
+          <ion-badge [color]="getStatusColor(order.status)" class="main-status-badge">
+            {{ getStatusLabel(order.status) }}
+          </ion-badge>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Status Timeline -->
+    <ion-card class="timeline-card">
+      <ion-card-header>
+        <ion-card-title class="section-title">
+          <ion-icon name="git-branch-outline"></ion-icon>
+          Progression
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="timeline">
+          <div
+            *ngFor="let step of statusTimelineItems(); let last = last"
+            class="timeline-item"
+            [class.done]="step.done"
+            [class.active]="step.active">
+            <div class="timeline-left">
+              <div class="timeline-dot" [style.background]="step.active || step.done ? 'var(--ion-color-' + step.color + ')' : 'var(--ion-color-light-shade)'">
+                <ion-icon *ngIf="step.done" name="checkmark-outline" style="font-size:10px; color:#fff"></ion-icon>
+                <ion-icon *ngIf="step.active" name="ellipse" style="font-size:8px; color:#fff"></ion-icon>
+              </div>
+              <div *ngIf="!last" class="timeline-line" [class.done-line]="step.done"></div>
+            </div>
+            <div class="timeline-content">
+              <ion-text [color]="step.active ? step.color : (step.done ? 'dark' : 'medium')">
+                <small [style.font-weight]="step.active ? '700' : '400'">{{ step.label }}</small>
+              </ion-text>
+            </div>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Info Card -->
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title class="section-title">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          Informations
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none" class="info-list">
+          <ion-item *ngIf="order.pdv">
+            <ion-icon name="storefront-outline" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <p>Point de vente</p>
+              <h3>{{ order.pdv.nom }}</h3>
+            </ion-label>
+          </ion-item>
+
+          <ion-item *ngIf="order.chef">
+            <ion-icon name="person-outline" slot="start" color="secondary"></ion-icon>
+            <ion-label>
+              <p>Chef de vente</p>
+              <h3>{{ order.chef.firstName }} {{ order.chef.lastName }}</h3>
+            </ion-label>
+          </ion-item>
+
+          <ion-item *ngIf="order.driver">
+            <ion-icon name="car-outline" slot="start" color="tertiary"></ion-icon>
+            <ion-label>
+              <p>Chauffeur</p>
+              <h3>{{ order.driver.firstName }} {{ order.driver.lastName }}</h3>
+            </ion-label>
+          </ion-item>
+
+          <ion-item *ngIf="order.notes">
+            <ion-icon name="document-text-outline" slot="start" color="medium"></ion-icon>
+            <ion-label>
+              <p>Notes</p>
+              <h3>{{ order.notes }}</h3>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Items Card -->
+    <ion-card *ngIf="order.items && order.items.length > 0">
+      <ion-card-header>
+        <ion-card-title class="section-title">
+          <ion-icon name="list-outline"></ion-icon>
+          Articles ({{ order.items.length }})
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="item-row" *ngFor="let item of order.items; trackBy: trackById">
+          <div class="item-info">
+            <div class="item-name">{{ item.produit?.nom || 'Produit' }}</div>
+            <div class="item-meta">
+              <ion-text color="medium"><small>{{ item.quantite }} × {{ item.prixUnitaire | number:'1.2-2' }} MAD</small></ion-text>
+            </div>
+          </div>
+          <div class="item-total">
+            <ion-text color="primary"><strong>{{ itemTotal(item) }}</strong></ion-text>
+          </div>
+        </div>
+
+        <div class="total-row">
+          <span>Total</span>
+          <ion-text color="primary"><strong>{{ orderTotal() }}</strong></ion-text>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Status Log -->
+    <ion-card *ngIf="order.statusLogs && order.statusLogs.length > 0">
+      <ion-card-header>
+        <ion-card-title class="section-title">
+          <ion-icon name="time-outline"></ion-icon>
+          Historique
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="log-item" *ngFor="let log of order.statusLogs">
+          <ion-badge [color]="getStatusColor(log.newStatus)" class="log-badge">
+            {{ getStatusLabel(log.newStatus) }}
+          </ion-badge>
+          <div class="log-meta">
+            <ion-text color="medium">
+              <small>{{ log.changedAt | date:'dd/MM/yy HH:mm' }}</small>
+            </ion-text>
+            <ion-text color="medium" *ngIf="log.changedBy">
+              <small> — {{ log.changedBy.firstName }} {{ log.changedBy.lastName }}</small>
+            </ion-text>
+          </div>
+          <div *ngIf="log.reason" class="log-reason">
+            <ion-text color="medium"><small><em>{{ log.reason }}</em></small></ion-text>
+          </div>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Transition Actions -->
+    <div class="action-section" *ngIf="availableTransitions.length > 0">
+      <ion-button
+        *ngFor="let t of availableTransitions"
+        expand="block"
+        [color]="t.color"
+        class="transition-btn"
+        (click)="onTransition(t)">
+        <ion-icon slot="start" [name]="t.icon"></ion-icon>
+        {{ t.label }}
+      </ion-button>
+    </div>
+
+    <!-- Cancel -->
+    <div class="cancel-section" *ngIf="auth.isManagerOrAdmin() && order.status !== 'COMPLETED' && order.status !== 'CANCELLED'">
+      <ion-button expand="block" fill="outline" color="danger" (click)="confirmCancel()">
+        <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+        Annuler la commande
+      </ion-button>
+    </div>
+
+    <div style="height: 32px"></div>
+  </ng-container>
+
+</ion-content>

@@ -1,0 +1,178 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/orders"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Nouvelle commande</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loadingData">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <ion-text color="medium"><p>Chargement...</p></ion-text>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!loadingData">
+
+    <!-- PDV Selection -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-title class="section-title">
+          <ion-icon name="storefront-outline" color="primary"></ion-icon>
+          Point de vente
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-select
+          formControlName="pdvId"
+          placeholder="Sélectionner un PDV"
+          interface="action-sheet"
+          class="custom-select"
+          [class.select-error]="form.get('pdvId')?.invalid && form.get('pdvId')?.touched">
+          <ion-select-option *ngFor="let pdv of pdvs" [value]="pdv.id">
+            {{ pdv.nom }}
+          </ion-select-option>
+        </ion-select>
+        <div class="error-msg" *ngIf="form.get('pdvId')?.invalid && form.get('pdvId')?.touched">
+          Le point de vente est requis
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Notes -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <ion-card-title class="section-title">
+          <ion-icon name="document-text-outline" color="medium"></ion-icon>
+          Notes (optionnel)
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-textarea
+          formControlName="notes"
+          placeholder="Remarques, instructions spéciales..."
+          rows="3"
+          class="custom-textarea">
+        </ion-textarea>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Items -->
+    <ion-card class="form-card">
+      <ion-card-header>
+        <div class="items-header">
+          <ion-card-title class="section-title">
+            <ion-icon name="cube-outline" color="warning"></ion-icon>
+            Articles
+          </ion-card-title>
+          <ion-button fill="clear" size="small" color="primary" (click)="addItem()">
+            <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+            Ajouter
+          </ion-button>
+        </div>
+      </ion-card-header>
+      <ion-card-content>
+        <div formArrayName="items">
+          <div
+            *ngFor="let item of items.controls; let i = index"
+            [formGroupName]="i"
+            class="item-form-group">
+
+            <div class="item-number">
+              <ion-badge color="medium">{{ i + 1 }}</ion-badge>
+              <ion-button
+                *ngIf="items.length > 1"
+                fill="clear"
+                size="small"
+                color="danger"
+                (click)="removeItem(i)">
+                <ion-icon name="trash-outline"></ion-icon>
+              </ion-button>
+            </div>
+
+            <!-- Produit -->
+            <div class="field-group">
+              <label class="field-label">Produit</label>
+              <ion-select
+                formControlName="produitId"
+                placeholder="Choisir un produit"
+                interface="action-sheet"
+                class="custom-select"
+                [class.select-error]="item.get('produitId')?.invalid && item.get('produitId')?.touched"
+                (ionChange)="onProduitSelect(i)">
+                <ion-select-option *ngFor="let p of produits" [value]="p.id">
+                  {{ p.nom }}
+                </ion-select-option>
+              </ion-select>
+            </div>
+
+            <!-- Quantité & Prix -->
+            <div class="two-cols">
+              <div class="field-group">
+                <label class="field-label">Quantité</label>
+                <ion-input
+                  formControlName="quantite"
+                  type="number"
+                  min="1"
+                  class="custom-input"
+                  [class.input-error]="item.get('quantite')?.invalid && item.get('quantite')?.touched">
+                </ion-input>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Prix unit. (MAD)</label>
+                <ion-input
+                  formControlName="prixUnitaire"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="custom-input"
+                  [class.input-error]="item.get('prixUnitaire')?.invalid && item.get('prixUnitaire')?.touched">
+                </ion-input>
+              </div>
+            </div>
+
+            <!-- Line Total -->
+            <div class="line-total" *ngIf="getLineTotal(i) > 0">
+              <ion-text color="primary">
+                <small><strong>Sous-total: {{ formatCurrency(getLineTotal(i)) }}</strong></small>
+              </ion-text>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grand Total -->
+        <div class="grand-total" *ngIf="grandTotal > 0">
+          <span>Total estimé</span>
+          <ion-text color="primary"><strong>{{ formatCurrency(grandTotal) }}</strong></ion-text>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Submit -->
+    <div class="submit-section">
+      <ion-button
+        expand="block"
+        type="submit"
+        color="primary"
+        class="submit-btn"
+        [disabled]="form.invalid">
+        <ion-icon slot="start" name="checkmark-circle-outline"></ion-icon>
+        Créer la commande
+      </ion-button>
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="medium"
+        routerLink="/orders"
+        class="cancel-btn">
+        Annuler
+      </ion-button>
+    </div>
+
+    <div style="height: 32px"></div>
+  </form>
+
+</ion-content>

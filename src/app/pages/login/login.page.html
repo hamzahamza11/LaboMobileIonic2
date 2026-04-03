@@ -1,0 +1,72 @@
+<ion-content class="login-content" [fullscreen]="true">
+  <div class="login-wrapper">
+
+    <!-- Logo / Brand -->
+    <div class="brand">
+      <div class="brand-icon">
+        <ion-icon name="cube-outline"></ion-icon>
+      </div>
+      <h1>Labs Supply Chain</h1>
+      <p>Gestion des commandes</p>
+    </div>
+
+    <!-- Form Card -->
+    <ion-card class="login-card">
+      <ion-card-content>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+          <!-- Email -->
+          <div class="field-group">
+            <ion-label class="field-label">Email</ion-label>
+            <ion-input
+              formControlName="email"
+              type="email"
+              placeholder="votre@email.com"
+              autocomplete="email"
+              class="custom-input"
+              [class.input-error]="email?.invalid && email?.touched">
+              <ion-icon slot="start" name="mail-outline" color="medium"></ion-icon>
+            </ion-input>
+            <div class="error-msg" *ngIf="email?.invalid && email?.touched">
+              <span *ngIf="email?.errors?.['required']">L'email est requis</span>
+              <span *ngIf="email?.errors?.['email']">Format d'email invalide</span>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="field-group">
+            <ion-label class="field-label">Mot de passe</ion-label>
+            <ion-input
+              formControlName="password"
+              [type]="showPassword ? 'text' : 'password'"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              class="custom-input"
+              [class.input-error]="password?.invalid && password?.touched">
+              <ion-icon slot="start" name="lock-closed-outline" color="medium"></ion-icon>
+              <ion-button slot="end" fill="clear" (click)="showPassword = !showPassword">
+                <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'" color="medium"></ion-icon>
+              </ion-button>
+            </ion-input>
+            <div class="error-msg" *ngIf="password?.invalid && password?.touched">
+              <span *ngIf="password?.errors?.['required']">Le mot de passe est requis</span>
+              <span *ngIf="password?.errors?.['minlength']">Minimum 6 caractères</span>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <ion-button
+            expand="block"
+            type="submit"
+            class="login-btn"
+            [disabled]="form.invalid">
+            <ion-icon slot="start" name="log-in-outline"></ion-icon>
+            Se connecter
+          </ion-button>
+
+        </form>
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+</ion-content>
