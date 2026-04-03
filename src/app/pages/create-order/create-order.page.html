@@ -114,11 +114,12 @@
               <div class="field-group">
                 <label class="field-label">Quantité</label>
                 <ion-input
-                  formControlName="quantite"
+                  formControlName="quantiteCommandee"
                   type="number"
-                  min="1"
+                  min="0.0001"
+                  step="any"
                   class="custom-input"
-                  [class.input-error]="item.get('quantite')?.invalid && item.get('quantite')?.touched">
+                  [class.input-error]="item.get('quantiteCommandee')?.invalid && item.get('quantiteCommandee')?.touched">
                 </ion-input>
               </div>
               <div class="field-group">

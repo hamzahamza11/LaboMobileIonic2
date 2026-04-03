@@ -61,7 +61,7 @@ export class CreateOrderPage implements OnInit {
   createItem(): FormGroup {
     return this.fb.group({
       produitId: ['', Validators.required],
-      quantite: [1, [Validators.required, Validators.min(1)]],
+      quantiteCommandee: [1, [Validators.required, Validators.min(0.0001)]],
       prixUnitaire: [0, [Validators.required, Validators.min(0)]],
     });
   }
@@ -79,20 +79,21 @@ export class CreateOrderPage implements OnInit {
   onProduitSelect(index: number): void {
     const item = this.items.at(index);
     const produitId = item.get('produitId')?.value;
-    const produit = this.produits.find((p) => p.id === produitId);
-    if (produit?.prixVente) {
-      item.get('prixUnitaire')?.setValue(produit.prixVente);
+    const produit = this.produits.find((p) => p.id === produitId || String(p.id) === String(produitId));
+    const prix = produit?.prixAchat ?? produit?.prixUnitaire ?? produit?.prixVente;
+    if (prix != null && prix !== '') {
+      item.get('prixUnitaire')?.setValue(parseFloat(String(prix)) || 0);
     }
   }
 
-  getProduitName(produitId: string): string {
-    return this.produits.find((p) => p.id === produitId)?.nom || '';
+  getProduitName(produitId: string | number): string {
+    return this.produits.find((p) => p.id === produitId || String(p.id) === String(produitId))?.nom || '';
   }
 
   getLineTotal(index: number): number {
     const item = this.items.at(index);
-    const qty = item.get('quantite')?.value || 0;
-    const prix = item.get('prixUnitaire')?.value || 0;
+    const qty = parseFloat(String(item.get('quantiteCommandee')?.value ?? 0)) || 0;
+    const prix = parseFloat(String(item.get('prixUnitaire')?.value ?? 0)) || 0;
     return qty * prix;
   }
 
@@ -115,16 +116,26 @@ export class CreateOrderPage implements OnInit {
       return;
     }
 
+    const raw = this.form.value;
+    const validItems = (raw.items as any[]).filter(
+      (i) => i.produitId != null && i.produitId !== '' && parseFloat(String(i.quantiteCommandee)) > 0,
+    );
+    if (validItems.length === 0) {
+      this.showToast('Ajoutez au moins une ligne produit valide', 'warning');
+      return;
+    }
+
     const loading = await this.loadingCtrl.create({ message: 'Création en cours...' });
     await loading.present();
 
+    // Same shape as frontend/app/orders/new/page.tsx → ordersApi.createOrder / CreateOrderDto
     const payload = {
-      pdvId: this.form.value.pdvId,
-      notes: this.form.value.notes || undefined,
-      items: this.form.value.items.map((i: any) => ({
-        produitId: i.produitId,
-        quantite: Number(i.quantite),
-        prixUnitaire: String(i.prixUnitaire),
+      pdvId: parseInt(String(raw.pdvId), 10),
+      notes: (raw.notes && String(raw.notes).trim()) || undefined,
+      items: validItems.map((i) => ({
+        produitId: parseInt(String(i.produitId), 10),
+        quantiteCommandee: parseFloat(String(i.quantiteCommandee)),
+        prixUnitaire: parseFloat(String(i.prixUnitaire)),
       })),
     };
 
